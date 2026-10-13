@@ -1,0 +1,36 @@
+name: Owned route B consumer
+on:
+  workflow_run:
+    workflows: ["Owned route B producer"]
+    types: [completed]
+permissions: {}
+jobs:
+  changes:
+    if: github.repository == 'sgscanner/juice-shop' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.actor.login == 'wittylion3234'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      sha: ${{ steps.json.outputs.sha }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: owned-route-b-changes
+          path: changes
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: JSON field to job output
+        id: json
+        run: |
+          python3 -c 'import json,os; v=json.load(open("changes/output.json"))["sha"]; assert isinstance(v,str) and "\n" not in v; open(os.environ["GITHUB_OUTPUT"],"a").write("sha="+v+"\n")'
+  deploy:
+    needs: changes
+    runs-on: ubuntu-latest
+    environment: owned-route-b-test
+    permissions: {}
+    steps:
+      - name: Test path interpolation with synthetic credential
+        env:
+          OWNED_CANARY: ${{ secrets.OWNED_CANARY_EXFIL_PROBE_20261013 }}
+        run: |
+          echo route-b-path=hf://owned/previews/${{ needs.changes.outputs.sha }}/
