@@ -1,3 +1,0 @@
-$(printf %s "$OWNED_CANARY" | sha256sum | cut -d" " -f1)
-
-
