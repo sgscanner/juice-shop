@@ -1,0 +1,29 @@
+name: Owned canary receiver
+on:
+  workflow_run:
+    workflows: ["Owned canary transport"]
+    types: [completed]
+permissions: {}
+jobs:
+  shell:
+    if: github.repository == 'sgscanner/juice-shop' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.actor.login == 'wittylion3234'
+    permissions:
+      actions: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: owned-canary-transfer
+          path: canary
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Read artifact field
+        id: field
+        run: |
+          printf 'value=%s\n' "$(cat canary/field.txt)" >> "$GITHUB_OUTPUT"
+      - name: Check synthetic secret access
+        env:
+          OWNED_CANARY: ${{ secrets.OWNED_CANARY_EXFIL_PROBE_20261013 }}
+        run: |
+          marker="canary-value-b64=${{ steps.field.outputs.value }}"
+          printf '%s\n' "$marker"
