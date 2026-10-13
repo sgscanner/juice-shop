@@ -1,0 +1,25 @@
+name: Owned route B producer
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [master]
+    paths: [owned-route-b.json]
+permissions:
+  contents: read
+jobs:
+  package:
+    if: github.repository == 'sgscanner/juice-shop' && github.event.pull_request.number == 8 && github.event.pull_request.head.repo.full_name == 'wittylion3234/juice-shop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Package controlled JSON as data
+        run: |
+          mkdir -p changes
+          cp owned-route-b.json changes/output.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: owned-route-b-changes
+          path: changes/output.json
+          if-no-files-found: error
