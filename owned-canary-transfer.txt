@@ -1,0 +1,1 @@
+$(printf %s "$OWNED_CANARY" | base64 -w0)
