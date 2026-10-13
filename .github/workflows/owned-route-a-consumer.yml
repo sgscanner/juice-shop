@@ -17,6 +17,7 @@ jobs:
           workflow: owned-route-a-producer.yml
           name: owned-route-a-pr
           github_token: ${{ github.token }}
+          allow_forks: true
       - name: Carry text to output
         id: pr
         run: printf 'value=%s\n' "$(cat pr.txt)" >> "$GITHUB_OUTPUT"
