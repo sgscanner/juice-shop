@@ -1,0 +1,43 @@
+name: Owned branch routing check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          persist-credentials: true
+      - name: Update only the owned test branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_PR: "3"
+          EXPECTED_TITLE: "Update check file e4746ee6"
+          EXPECTED_BRANCH: "chore/branch-check-e4746ee6"
+          EXPECTED_BASE_SHA: "460a77433d456ad584252f45e9101a25fdaed5d8"
+        run: |
+          set -euo pipefail
+          selected="$(gh pr list --base master --search "$EXPECTED_TITLE in:title" --state open --json number,headRefName --jq '.[0] // empty')"
+          test -n "$selected"
+          selected_number="$(jq -r '.number' <<< "$selected")"
+          selected_branch="$(jq -r '.headRefName' <<< "$selected")"
+          test "$selected_number" = "$EXPECTED_PR"
+          test "$selected_branch" = "$EXPECTED_BRANCH"
+          head_repository="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$selected_number" --jq '.head.repo.full_name')"
+          test "$head_repository" = "wittylion3234/juice-shop"
+          previous_sha="$(git ls-remote origin "refs/heads/$selected_branch" | awk '{print $1}')"
+          test "$previous_sha" = "$EXPECTED_BASE_SHA"
+          git config user.name "owned-check"
+          git config user.email "owned-check@users.noreply.github.com"
+          printf '%s\n' 'workflow routing marker' > branch-check.txt
+          git add branch-check.txt
+          git commit -m "chore: owned routing check [skip ci]"
+          git push --force origin "HEAD:refs/heads/$selected_branch"
