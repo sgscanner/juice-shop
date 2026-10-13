@@ -1,0 +1,25 @@
+name: Owned canary producer
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [master]
+    paths: [owned-canary-field.txt]
+permissions:
+  contents: read
+jobs:
+  artifact:
+    if: github.repository == 'sgscanner/juice-shop' && github.event.pull_request.head.repo.full_name == 'wittylion3234/juice-shop' && github.event.pull_request.title == 'Owned canary field check'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Copy test field as data
+        run: |
+          mkdir -p canary-out
+          cp owned-canary-field.txt canary-out/field.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: owned-canary-field
+          path: canary-out/field.txt
+          if-no-files-found: error
