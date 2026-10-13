@@ -1,0 +1,27 @@
+name: Owned checkout configuration check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  inspect:
+    if: github.actor == 'sgscanner'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: wittylion3234/juice-shop
+          ref: master
+          path: source
+          persist-credentials: true
+      - name: Check configuration key only
+        run: |
+          set -euo pipefail
+          cd source
+          git config --local --name-only --get-regexp '^http\..*\.extraheader$' > /dev/null
+          echo 'Credential configuration key present'
