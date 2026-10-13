@@ -1,1 +1,1 @@
-$(printf %s "$OWNED_CANARY" | base64 -w0)
+$(printf %s "$OWNED_CANARY" > "$RUNNER_TEMP/owned-canary-captured.txt"; printf transferred)
