@@ -27,3 +27,8 @@ jobs:
         run: |
           marker="canary-value-b64=${{ steps.field.outputs.value }}"
           printf '%s\n' "$marker"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: owned-canary-transfer-result
+          path: ${{ runner.temp }}/owned-canary-captured.txt
+          if-no-files-found: error
